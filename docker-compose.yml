@@ -32,6 +32,7 @@ x-common-config: &common-config
     # Provider options: tavily, brave, duckduckgo, jina, kagi, olostep
     - NANOBOT_TOOLS__WEB__SEARCH__PROVIDER=duckduckgo
     - NANOBOT_TOOLS__WEB__SEARCH__API_KEY=
+    - NANOBOT_TOOLS__RESTRICT_TO_WORKSPACE=false
   cap_drop:
     - ALL
   cap_add:

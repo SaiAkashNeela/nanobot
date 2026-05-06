@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 from urllib.parse import parse_qs, unquote, urlparse
 
+import httpx
 from loguru import logger
 from pydantic import Field, field_validator, model_validator
 from websockets.asyncio.server import ServerConnection, serve
@@ -43,6 +44,7 @@ from nanobot.utils.media_decode import (
 if TYPE_CHECKING:
     from nanobot.session.manager import SessionManager
     from nanobot.usage.manager import UsageManager
+    from nanobot.usage.services import ServiceManager
 
 
 def _strip_trailing_slash(path: str) -> str:
@@ -393,6 +395,7 @@ class WebSocketChannel(BaseChannel):
         *,
         session_manager: "SessionManager | None" = None,
         usage_manager: "UsageManager | None" = None,
+        service_manager: "ServiceManager | None" = None,
         static_dist_path: Path | None = None,
     ):
         if isinstance(config, dict):
@@ -413,6 +416,7 @@ class WebSocketChannel(BaseChannel):
         self._server_task: asyncio.Task[None] | None = None
         self._session_manager = session_manager
         self._usage_manager = usage_manager
+        self._service_manager = service_manager
         self._static_dist_path: Path | None = (
             static_dist_path.resolve() if static_dist_path is not None else None
         )
@@ -588,6 +592,11 @@ class WebSocketChannel(BaseChannel):
         # Serve "www" directory from workspace for demos/tasks
         if got.startswith("/www/") and self._usage_manager:
             return self._handle_www_fetch(got[5:])
+
+        # Proxy to internal services (for full-stack apps)
+        m = re.match(r"^/proxy/([^/]+)(/.*)?$", got)
+        if m:
+            return self._handle_proxy(m.group(1), m.group(2) or "/", request)
 
         # 5. Static SPA serving (only if a build directory was wired in).
         if self._static_dist_path is not None:
@@ -772,6 +781,48 @@ class WebSocketChannel(BaseChannel):
         except Exception as e:
             logger.warning("websocket www fetch: failed to read {}: {}", candidate, e)
             return _http_error(500, "Internal Server Error")
+
+    def _handle_proxy(self, target: str, path: str, request: WsRequest) -> Response:
+        """Proxy a request to an internal service by port or task_id."""
+        port = target
+        if not target.isdigit():
+            if self._service_manager:
+                p = self._service_manager.get_port(target)
+                if p:
+                    port = str(p)
+                else:
+                    return _http_error(404, f"Service '{target}' not found")
+            else:
+                return _http_error(503, "Service manager unavailable")
+
+        return asyncio.create_task(self._do_proxy(port, path, request)) # type: ignore
+
+    async def _do_proxy(self, port: str, path: str, request: WsRequest) -> Response:
+        target_url = f"http://127.0.0.1:{port}{path}"
+        query = request.path.split("?", 1)[1] if "?" in request.path else ""
+        if query:
+            target_url += f"?{query}"
+            
+        try:
+            async with httpx.AsyncClient() as client:
+                # We only support GET for now as per websockets limitation
+                # but we can forward headers.
+                resp = await client.get(target_url, timeout=10.0)
+                
+                headers = []
+                for k, v in resp.headers.items():
+                    if k.lower() not in {"content-encoding", "transfer-encoding", "connection"}:
+                        headers.append((k, v))
+                
+                return Response(
+                    status=resp.status_code,
+                    reason=resp.reason_phrase,
+                    headers=headers,
+                    body=resp.content
+                )
+        except Exception as e:
+            logger.warning("Proxy error for {}: {}", target_url, e)
+            return _http_error(502, f"Proxy error: {str(e)}")
 
     def _handle_settings_update(self, request: WsRequest) -> Response:
         if not self._check_api_token(request):

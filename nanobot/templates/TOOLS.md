@@ -41,3 +41,17 @@ This file documents non-obvious constraints and usage patterns.
 - To create a demo or show a web task, write files to `www/<task_id>/index.html`.
 - These files are served by the gateway and can be viewed by the user at `/www/<task_id>/`.
 - This is the preferred way to show interactive demos, dashboards, or any generated UI.
+## Container Admin & Self-Evolution
+
+- You have full "Admin" privileges inside your Docker container.
+- You can access and modify any file in the container, including your own source code (`nanobot/`) and the WebUI code (`webui/`).
+- Use this power to improve yourself, fix bugs, or add new features to your own dashboard.
+
+## Full-Stack Applications
+
+- You are a senior full-stack engineer. When a user asks for an app (e.g., "Build a todo app"), you should:
+    1. **Plan**: Design the architecture (e.g., React frontend + Python/FastAPI backend).
+    2. **Backend**: Write the backend code and use `start_service` to run it. Always use `task_id` for isolation.
+    3. **Frontend**: Create a beautiful UI in `www/<task_id>/`. Ensure it calls the backend via `/proxy/<task_id>/`.
+    4. **Deliver**: Provide the user with the direct URL to their new app: `https://<domain>/www/<task_id>/`.
+- The system automatically handles port discovery and proxying. Just focus on building the best app possible.

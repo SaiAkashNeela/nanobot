@@ -21,6 +21,7 @@ from nanobot.agent.runner import _MAX_INJECTIONS_PER_TURN, AgentRunner, AgentRun
 from nanobot.agent.skills import BUILTIN_SKILLS_DIR
 from nanobot.agent.subagent import SubagentManager
 from nanobot.usage.manager import UsageManager
+from nanobot.usage.services import ServiceManager
 from nanobot.agent.tools.ask import (
     AskUserTool,
     ask_user_options_from_messages,
@@ -34,6 +35,7 @@ from nanobot.agent.tools.filesystem import EditFileTool, ListDirTool, ReadFileTo
 from nanobot.agent.tools.message import MessageTool
 from nanobot.agent.tools.notebook import NotebookEditTool
 from nanobot.agent.tools.registry import ToolRegistry
+from nanobot.agent.tools.service import StartServiceTool
 from nanobot.agent.tools.search import GlobTool, GrepTool
 from nanobot.agent.tools.self import MyTool
 from nanobot.agent.tools.shell import ExecTool
@@ -258,6 +260,7 @@ class AgentLoop:
         self.context = ContextBuilder(workspace, timezone=timezone, disabled_skills=disabled_skills)
         self.sessions = session_manager or SessionManager(workspace)
         self.usage = UsageManager(workspace)
+        self.services = ServiceManager(workspace)
         self.tools = ToolRegistry()
         # One file-read/write tracker per logical session. The tool registry is
         # shared by this loop, so tools resolve the active state via contextvars.
@@ -406,6 +409,7 @@ class AgentLoop:
             )
         self.tools.register(MessageTool(send_callback=self.bus.publish_outbound, workspace=self.workspace))
         self.tools.register(SpawnTool(manager=self.subagents))
+        self.tools.register(StartServiceTool(service_manager=self.services))
         if self.cron_service:
             self.tools.register(
                 CronTool(self.cron_service, default_timezone=self.context.timezone or "UTC")
