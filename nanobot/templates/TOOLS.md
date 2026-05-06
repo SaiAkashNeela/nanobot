@@ -55,3 +55,15 @@ This file documents non-obvious constraints and usage patterns.
     3. **Frontend**: Create a beautiful UI in `www/<task_id>/`. Ensure it calls the backend via `/proxy/<task_id>/`.
     4. **Deliver**: Provide the user with the direct URL to their new app: `https://<domain>/www/<task_id>/`.
 - The system automatically handles port discovery and proxying. Just focus on building the best app possible.
+
+## Sidecar Databases
+
+- **Postgres (pgvector)**: Available at `postgres:5432`.
+    - Credentials: User `nanobot`, Password `nanobot_password`, DB `nanobot`.
+    - You can create new databases/schemas for specific tasks using `exec` and `psql`.
+    - `pgvector` is installed; use it for vector search / embeddings.
+- **Redis**: Available at `redis:6379`.
+    - Use this for caching, queues, or real-time state.
+- **MongoDB**: Available at `mongodb:27017`.
+    - Use this for document-based storage or flexible schemas.
+- Always use the provided environment variables `POSTGRES_URL`, `REDIS_URL`, and `MONGO_URL` in the apps you build.

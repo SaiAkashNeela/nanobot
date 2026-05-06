@@ -33,6 +33,10 @@ x-common-config: &common-config
     - NANOBOT_TOOLS__WEB__SEARCH__PROVIDER=duckduckgo
     - NANOBOT_TOOLS__WEB__SEARCH__API_KEY=
     - NANOBOT_TOOLS__RESTRICT_TO_WORKSPACE=false
+    # --- SIDECAR DATABASES ---
+    - POSTGRES_URL=postgresql://nanobot:nanobot_password@postgres:5432/nanobot
+    - REDIS_URL=redis://redis:6379/0
+    - MONGO_URL=${MONGO_URL:-mongodb://nanobot:nanobot_password@mongodb:27017/nanobot?authSource=admin}
   cap_drop:
     - ALL
   cap_add:
@@ -40,6 +44,8 @@ x-common-config: &common-config
   security_opt:
     - apparmor=unconfined
     - seccomp=unconfined
+  networks:
+    - nanobot-net
 
 services:
   nanobot-gateway:
@@ -75,6 +81,40 @@ services:
           cpus: "0.25"
           memory: 256M
 
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nanobot-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=nanobot
+      - POSTGRES_PASSWORD=nanobot_password
+      - POSTGRES_DB=nanobot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nanobot-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: nanobot-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - nanobot-net
+
+  mongodb:
+    image: mongo:latest
+    container_name: nanobot-mongodb
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nanobot
+      - MONGO_INITDB_ROOT_PASSWORD=nanobot_password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - nanobot-net
+
   nanobot-cli:
     <<: *common-config
     profiles:
@@ -82,6 +122,15 @@ services:
     command: ["status"]
     stdin_open: true
     tty: true
+    networks:
+      - nanobot-net
+
+networks:
+  nanobot-net:
+    driver: bridge
 
 volumes:
   nanobot_data:
+  postgres_data:
+  redis_data:
+  mongo_data:
