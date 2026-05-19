@@ -4,13 +4,9 @@ import {
   BarChart3,
   ListFilter,
   Menu,
-  Moon,
-  PanelLeftClose,
-  RefreshCcw,
   Search,
   Settings,
   SquarePen,
-  Sun,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

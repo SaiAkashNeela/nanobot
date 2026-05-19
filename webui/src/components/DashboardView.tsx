@@ -10,7 +10,7 @@ import {
   Activity,
   History
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,7 +48,6 @@ interface MCPStatus {
 }
 
 export function DashboardView({ onBackToChat }: { onBackToChat: () => void }) {
-  const { t } = useTranslation();
   const { token } = useClient();
   const [stats, setStats] = useState<Stats | null>(null);
   const [mcp, setMcp] = useState<MCPStatus | null>(null);

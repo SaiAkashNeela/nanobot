@@ -1170,6 +1170,8 @@ def test_gateway_cron_evaluator_receives_scheduled_reminder_context(
             self.model = "test-model"
             self.provider = kwargs.get("provider", object())
             self.tools = {}
+            self.usage = None
+            self.services = None
             seen["agent"] = self
 
         async def process_direct(self, *_args, **_kwargs):
@@ -1311,6 +1313,8 @@ def test_gateway_cron_job_suppresses_intermediate_progress(
             self.model = "test-model"
             self.provider = object()
             self.tools = {}
+            self.usage = None
+            self.services = None
 
         async def process_direct(self, *_args, on_progress=None, **_kwargs):
             seen["on_progress"] = on_progress
@@ -1548,6 +1552,8 @@ def test_gateway_health_endpoint_binds_and_serves_expected_responses(
             self.provider = object()
             self.dream = _FakeDream()
             self.sessions = _FakeSessionManager()
+            self.usage = None
+            self.services = None
 
         def llm_runtime(self) -> None:
             return None
