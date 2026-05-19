@@ -11,6 +11,7 @@ from nanobot.agent.tools.schema import StringSchema, tool_parameters_schema
 
 if TYPE_CHECKING:
     from nanobot.usage.services import ServiceManager
+    from nanobot.agent.tools.context import ToolContext
 
 
 @tool_parameters(
@@ -22,6 +23,15 @@ if TYPE_CHECKING:
 )
 class StartServiceTool(Tool):
     """Tool to start a background service with an automatically assigned port."""
+
+    @classmethod
+    def enabled(cls, ctx: "ToolContext") -> bool:
+        return ctx.service_manager is not None
+
+    @classmethod
+    def create(cls, ctx: "ToolContext") -> StartServiceTool:
+        assert ctx.service_manager is not None
+        return cls(service_manager=ctx.service_manager)
 
     def __init__(self, service_manager: "ServiceManager"):
         self._service_manager = service_manager
