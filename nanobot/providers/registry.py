@@ -192,6 +192,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         detect_by_base_keyword="volces",
         default_api_base="https://ark.cn-beijing.volces.com/api/v3",
         thinking_style="thinking_type",
+        supports_max_completion_tokens=True,
     ),
 
     # VolcEngine Coding Plan (火山引擎 Coding Plan): same key as volcengine
@@ -205,6 +206,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         default_api_base="https://ark.cn-beijing.volces.com/api/coding/v3",
         strip_model_prefix=True,
         thinking_style="thinking_type",
+        supports_max_completion_tokens=True,
     ),
 
     # BytePlus: VolcEngine international, pay-per-use models
@@ -368,6 +370,8 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         reasoning_as_content=True,
     ),
     # Xiaomi MIMO (小米): OpenAI-compatible API
+    # Hosted API (api.xiaomimimo.com) accepts {"thinking": {"type": "enabled"|"disabled"}}
+    # to toggle reasoning, matching the existing thinking_type style.
     ProviderSpec(
         name="xiaomi_mimo",
         keywords=("xiaomi_mimo", "mimo"),
@@ -375,6 +379,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         display_name="Xiaomi MIMO",
         backend="openai_compat",
         default_api_base="https://api.xiaomimimo.com/v1",
+        thinking_style="thinking_type",
     ),
     # LongCat: OpenAI-compatible API
     ProviderSpec(
@@ -385,13 +390,23 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         backend="openai_compat",
         default_api_base="https://api.longcat.chat/openai/v1",
     ),
+    # Ant Ling: OpenAI-compatible API for Ling/Ring model families.
+    ProviderSpec(
+        name="ant_ling",
+        keywords=("ant_ling", "ant-ling", "ling-", "ring-"),
+        env_key="ANT_LING_API_KEY",
+        display_name="Ant Ling",
+        backend="openai_compat",
+        detect_by_base_keyword="ant-ling.com",
+        default_api_base="https://api.ant-ling.com/v1",
+    ),
     # === Local deployment (matched by config key, NOT by api_base) =========
     # vLLM / any OpenAI-compatible local server
     ProviderSpec(
         name="vllm",
         keywords=("vllm",),
         env_key="HOSTED_VLLM_API_KEY",
-        display_name="vLLM/Local",
+        display_name="vLLM",
         backend="openai_compat",
         is_local=True,
     ),
@@ -417,6 +432,17 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         detect_by_base_keyword="1234",
         default_api_base="http://localhost:1234/v1",
     ),
+    # Atomic Chat (local, OpenAI-compatible) — https://atomic.chat/
+    ProviderSpec(
+        name="atomic_chat",
+        keywords=("atomic-chat", "atomic_chat", "atomicchat"),
+        env_key="ATOMIC_CHAT_API_KEY",
+        display_name="Atomic Chat",
+        backend="openai_compat",
+        is_local=True,
+        detect_by_base_keyword="1337",
+        default_api_base="http://localhost:1337/v1",
+    ),
     # === OpenVINO Model Server (direct, local, OpenAI-compatible at /v3) ===
     ProviderSpec(
         name="ovms",
@@ -427,6 +453,19 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         is_direct=True,
         is_local=True,
         default_api_base="http://localhost:8000/v3",
+    ),
+    # === NVIDIA NIM (NVIDIA Inference Microservices) =======================
+    # Keys start with "nvapi-", base URL at integrate.api.nvidia.com
+    ProviderSpec(
+        name="nvidia",
+        keywords=("nvidia", "nemotron", "nvapi"),
+        env_key="NVIDIA_NIM_API_KEY",
+        display_name="NVIDIA NIM",
+        backend="openai_compat",
+        is_gateway=False,
+        detect_by_key_prefix="nvapi-",
+        detect_by_base_keyword="nvidia.com",
+        default_api_base="https://integrate.api.nvidia.com/v1",
     ),
     # === Auxiliary (not a primary LLM provider) ============================
     # Groq: mainly used for Whisper voice transcription, also usable for LLM
