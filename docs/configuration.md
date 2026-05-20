@@ -168,7 +168,7 @@ ANTHROPIC_API_KEY="$(bw get password api/anthropic)" nanobot agent
 <details>
 <summary><b>Skywork / APIFree</b></summary>
 
-Skywork uses the OpenAI-compatible APIFree API endpoint. Configure the provider
+Skywork uses APIFree's OpenAI-compatible Agent API endpoint. Configure the provider
 once, then use Skywork model IDs such as `skywork-ai/skyclaw-v1`.
 
 ```json
@@ -176,7 +176,7 @@ once, then use Skywork model IDs such as `skywork-ai/skyclaw-v1`.
   "providers": {
     "skywork": {
       "apiKey": "${SKYWORK_API_KEY}",
-      "apiBase": "https://api.apifree.ai/v1"
+      "apiBase": "https://api.apifree.ai/agent/v1"
     }
   },
   "agents": {

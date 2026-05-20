@@ -1031,7 +1031,7 @@ async def test_settings_api_returns_safe_subset_and_updates_whitelist(
         assert providers["openrouter"]["configured"] is False
         assert providers["openrouter"]["api_key_required"] is True
         assert providers["skywork"]["label"] == "Skywork"
-        assert providers["skywork"]["default_api_base"] == "https://api.apifree.ai/v1"
+        assert providers["skywork"]["default_api_base"] == "https://api.apifree.ai/agent/v1"
         assert providers["ant_ling"]["label"] == "Ant Ling"
         assert providers["ant_ling"]["default_api_base"] == "https://api.ant-ling.com/v1"
         assert providers["atomic_chat"]["configured"] is False

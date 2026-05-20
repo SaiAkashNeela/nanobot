@@ -165,7 +165,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         env_extras=(("APIFREE_API_KEY", "{api_key}"),),
         is_gateway=True,
         detect_by_base_keyword="apifree.ai",
-        default_api_base="https://api.apifree.ai/v1",
+        default_api_base="https://api.apifree.ai/agent/v1",
     ),
     # AiHubMix: global gateway, OpenAI-compatible interface.
     # strip_model_prefix=True: doesn't understand "anthropic/claude-3",
