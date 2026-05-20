@@ -99,18 +99,7 @@ services:
       - redis_data:/data
     networks:
       - nanobot-net
-
-  mongodb:
-    image: mongo:latest
-    restart: unless-stopped
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=nanobot
-      - MONGO_INITDB_ROOT_PASSWORD=nanobot_password
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - nanobot-net
-
+      
   nanobot-cli:
     <<: *common-config
     profiles:
